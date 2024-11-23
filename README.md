@@ -3,5 +3,5 @@ Here are writeups from the followings platforms:
 
 ## HackingClub
 * [KOF](hacking-club/KOF.md) - SQL Injection, Hash Crack, Command Injection, Bash SUID, Docker Breakout/Escape
-* Lion - SQL Injection, Cronjob missconfig
-* Poisoning - LFI, Log Poisoning, Python Capabilities
+* [Lion](hacking-club/Lion.md) - SQL Injection, Cronjob missconfig
+* [Poisoning](hacking-club/Poisoning.md) - LFI, Log Poisoning, Python Capabilities
