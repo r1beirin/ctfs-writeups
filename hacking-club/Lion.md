@@ -3,6 +3,7 @@
 
 ## Recon
 During the recon phase using Nmap and Feroxbuster, we found a few interesting things, such as an endpoint `/admine/includes` that contains some information, but we didn’t find anything suspicious. The Nmap scan didn’t reveal anything unusual either. There is a database and an RPC service open, but nothing significant was discovered.
+<br>
 ![nmap image](../images/lion/nmap.webp)
 ![feroxbuster image](../images/lion/feroxbuster.webp)
 
