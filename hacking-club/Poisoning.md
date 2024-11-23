@@ -14,7 +14,7 @@ Right away, we discovered two interesting files when accessing:
 
 Given the suggestive name of the machine, I decided to perform parameter fuzzing using the `burp-parameter-names.txt` wordlist from SecList (recon and fuzzing module) on the `index.php` file, followed by the `page.php` file. Initially, I filtered by the words, lines, and finally the response size. FFUF indicated a size change in the response for the `page` parameter in `index.php`.
 ```
-ffuf -w ‘/usr/share/SecLists/Discovery/Web-Content/burp-parameter-names.txt’ -u http://10.9.2.11/index.php?FUZZ=localhost -t 100 -fs 39277
+ffuf -w '/usr/share/SecLists/Discovery/Web-Content/burp-parameter-names.txt' -u http://10.9.2.11/index.php?FUZZ=localhost -t 100 -fs 39277
 ```
 ![ffuf image](../images/lion/ffuf.webp)
 
@@ -41,7 +41,7 @@ After obtaining the reverse shell, we found that the user’s flag was marked as
 Thus, we discovered that the Python binary version 3.6.9 is set with capabilities. We can exploit this for privilege escalation. By running the following Python script, we can set the UID to 0 (root):
 
 ```python
-python3 -c ‘'mport os; os.setuid(0); os.system("/bin/bash")'
+python3 -c 'import os; os.setuid(0); os.system("/bin/bash")'
 ```
 
 This allowed us to escalate privileges and obtain flag2 from the machine :)
