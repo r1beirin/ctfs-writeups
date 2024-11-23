@@ -1,5 +1,5 @@
 # KOF
-![index image](/images/kof/index.png)
+![index image](../images/kof/index.png)
 
 ## Recon
 In the beginning I used NMAP with the following parameters. So I found just ports 22 and 8000 open (it's seens a django application in a linux)
