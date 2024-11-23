@@ -166,7 +166,7 @@ To perform the Docker breakout/escape, I will use the `/proc` endpoint. First, I
 
 With this, we can access the Docker process directory, navigate to the root directory, and then escape to the root directory of the host machine running the Docker container. So `cd /proc/2741/root/`.
 <br>
-![docker breakout image](../images/kof/doker_breakout.png)
+![docker breakout image](../images/kof/docker_breakout.png)
 
 Here are the two flags: one for the default root user after privilege escalation (`flag.txt`), and the other for the Docker breakout (`root.txt`).
 **Disclaimer**: Docker breakout can be achieved in other ways, such as using Process Injection.
