@@ -63,6 +63,7 @@ Upon accessing the application, I encountered a login page at the index.
 ![index login page](../images/biscuit/index_php.png)
 
 So, I decided to verify the `/class` path and found something. This directory was exposed with a file named `Auth.class.php`. I tried to access the file to view its source code, but nothing happened.
+<br>
 ![directory exposed](../images/biscuit/class_directoryexposed.png)
 
 I also tried to discover other paths and files, but I was unsuccessful.
@@ -70,16 +71,16 @@ I also tried to discover other paths and files, but I was unsuccessful.
 Here, we have many vectors to explore. So, I decided to start with the web application. The first thing that came to mind was to explore the request using Type Juggling, as the backend is running PHP.
 ```
 POST / HTTP/1.1
-Host: 172.16.2.123
+Host: 172.16.5.90
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0
 Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
 Accept-Language: en-US,en;q=0.5
 Accept-Encoding: gzip, deflate, br
 Content-Type: application/x-www-form-urlencoded
 Content-Length: 29
-Origin: http://172.16.2.123
+Origin: http://172.16.5.90
 Connection: keep-alive
-Referer: http://172.16.2.123/
+Referer: http://172.16.5.90/
 Cookie: PHPSESSID=hj59tek1le91eot9i0j4gh9icp
 Upgrade-Insecure-Requests: 1
 Priority: u=0, i
@@ -181,6 +182,7 @@ ZXhwaXJhdGlvbiI6MTczNTI0NjM2MX0K
 ```
 
 And voilà, we got a reverse shell! Now, we just need to get a full TTY.
+<br>
 ![reverse_shell.png](../images/biscuit/reverse_shell.png)
 ## Post exploitation
 Here, I found some things with `linpeas`, but I wasn't successful with that. So, I decided to perform the recon manually.
@@ -205,6 +207,7 @@ Basically, this file just blocks an IP from a single file located at `/var/www/h
 ![python_file_1.png](../images/biscuit/python_file_1.png)
 
 Inside `block.ips.db.json`, we have a JSON file with a list of IPs to block. So, we can edit this file to add whatever we want. To test, I'll modify it to `{"ips":[test]}`.
+<br>
 ![python_file_2.png](../images/biscuit/python_file_2.png)
 
 After the test, we can see that there is a method called `ip_blocked()` inside `ip`. So, here I can access the internal attributes using a Format String vulnerability. Refs: [Can Python's string .format() be made safe for untrusted format strings?](https://stackoverflow.com/questions/15356649/can-pythons-string-format-be-made-safe-for-untrusted-format-strings), [Is format string still an issue in Python?](https://security.stackexchange.com/questions/269949/is-format-string-still-an-issue-in-python) and [Testing for Format String](https://owasp.org/www-project-web-security-testing-guide/v41/4-Web_Application_Security_Testing/07-Input_Validation_Testing/13.3-Testing_for_Format_String)
