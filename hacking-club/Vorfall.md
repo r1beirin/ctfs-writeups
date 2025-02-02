@@ -334,7 +334,7 @@ finally:
 Once the payload is sent, just run nc to receive the reverse shell! :D
 
 ## Post exploitation
-In the sudo -l command, we see that smbclient can be executed with sudo permissions.
+In the `sudo -l` command, we see that smbclient can be executed with sudo permissions.
 ```bash
 support@ip-172-16-0-70:/home/share/smbuser$ sudo -l
 Matching Defaults entries for support on ip-172-16-0-70:
