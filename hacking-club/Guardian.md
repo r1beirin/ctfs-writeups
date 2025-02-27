@@ -27,7 +27,7 @@ Nmap done: 1 IP address (1 host up) scanned in 47.74 seconds
 ```
 The scan revealed only ports 22 (SSH) and 80 (HTTP) as open. This suggests that the target is likely running a web service and allowing remote SSH connections.
 
-Above, we can see that there is a redirect to the `/login` page, indicating that authentication is required. Additionally, the application is using `Express.js` as its web framework, which suggests that it is built with Node.js.
+Below, we can see that there is a redirect to the `/login` page, indicating that authentication is required. Additionally, the application is using `Express.js` as its web framework, which suggests that it is built with Node.js.
 ```bash
 ┌─[ribeirin@parrot]─[~/Documents/machines/hackingclub/guardian]
 └──╼ $whatweb 172.16.7.194
