@@ -9,3 +9,4 @@ Here are writeups from the followings platforms:
 * [Biscuit](hacking-club/Biscuit.md) - Default Password, Type Juggling via Cookies, Insecure Desserialization in PHP with RFI and File with Sudo Exec Permission via Format String Python (privesc)
 * [UHC V20](hacking-club/Uhc-v20.md) - LFI via PHP, change user to UHC using Prototype Pollution and File with Sudo Exec Permission via Node (privesc)
 * [Vorfall](hacking-club/Vorfall.md) - Broken Access Control, Path Traversal, Reverse Malware Engineering to get RCE and Sudo Exec Permission via smbclient (privesc)
+* [Guardian](hacking-club/Guardian.md) - Bypass Verification with SQL Injection, Code Review to get RCE and Reverse Engineering to get root via Path Hijacking (privesc).

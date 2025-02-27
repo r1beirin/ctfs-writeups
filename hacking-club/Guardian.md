@@ -149,7 +149,7 @@ This suggests that the application dynamically executes queries based on user in
 In the `/first-access` registration process, there is an Employer Identification Number (EIN) input field. When a request is made to verify the EIN, the application sends a request to: `POST /api/auth/first-access`
 ![](../images/guardian/error_ein.png)
 
-By testing the payload: `' or 1=1#` we successfully bypassed the EIN verification and obtained a list of valid EINs. This confirms that the application is vulnerable to SQL Injection on the `/api/auth/first-acces`s endpoint.
+By testing the payload: `' or 1=1#` we successfully bypassed the EIN verification and obtained a list of valid EINs. This confirms that the application is vulnerable to SQL Injection on the `/api/auth/first-access` endpoint.
 ![](../images/guardian/sql_injection.png)
 
 To register using the obtained EIN (56-7890123), we need to send a POST request to `/api/auth/first-access/register` with the required parameters.
@@ -158,7 +158,7 @@ To register using the obtained EIN (56-7890123), we need to send a POST request 
 Now that we have registered an account, we need to log in to obtain an authentication token.
 ![](../images/guardian/login.png)
 
-Now that we have obtained a JWT.
+Now that we have obtained a JWT. We can add `Authorization: Bearer TOKEN` in our request header.
 ```
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmOTRiZjRhMy1hNDJmLTRhZjMtYTRhYy1lZjFiOTkyMDRkMTYiLCJFSU4iOiI1Ni03ODkwMTIzIiwiZW1haWwiOiJ0ZXN0QGdtYWlsLmNvbSIsInVzZXJuYW1lIjoidGVzdCIsIlNTTiI6IjEyMzQiLCJhcHByb3ZlZCI6MCwiaWF0IjoxNzQwNjI2NDYxLCJleHAiOjE3NDA2NDA4NjF9.9oqz6-D1JgxsB-rvHn-rCKvpUZu_Ql2aXutMIstXz70
 ```
@@ -177,6 +177,7 @@ Great! Now that we have confirmed Remote Code Execution (RCE), you can use the f
 
 ## Post Exploitation
 Inside `/opt` we have a binary file. Since the binary inside `/opt` has the SUID bit set, it runs with elevated privileges. If we can analyze and exploit it, we may escalate privileges to root.
+<br>
 ![](../images/guardian/opt_1.png)
 ![](../images/guardian/opt_2.png)
 
