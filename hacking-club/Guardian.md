@@ -179,6 +179,7 @@ Great! Now that we have confirmed Remote Code Execution (RCE), you can use the f
 Inside `/opt` we have a binary file. Since the binary inside `/opt` has the SUID bit set, it runs with elevated privileges. If we can analyze and exploit it, we may escalate privileges to root.
 <br>
 ![](../images/guardian/opt_1.png)
+<br>
 ![](../images/guardian/opt_2.png)
 
 With Ghidra, we can see the following information:
